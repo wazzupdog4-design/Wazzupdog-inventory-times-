@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wazzup Dog – Inventory</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f4ef;--card:#fff;--tx:#1d1d1f;--mu:#6b6b70;--br:#e2ded3;--pr:#d62828;--in:#fff8cc;--ok:#1b7f3b;--bad:#c1121f;--hd:#2b2d42}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#17171a;--card:#222226;--tx:#f1f1f3;--mu:#a0a0a8;--br:#38383f;--in:#4a4420;--ok:#5fd584;--bad:#ff6b73;--hd:#0f0f12}}
+:root[data-theme=dark]{--bg:#17171a;--card:#222226;--tx:#f1f1f3;--mu:#a0a0a8;--br:#38383f;--in:#4a4420;--ok:#5fd584;--bad:#ff6b73;--hd:#0f0f12}
+h3{font-size:14px;margin:16px 0 8px}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;font-size:15px}
+header{background:linear-gradient(135deg,var(--pr),var(--hd));color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#logo{width:44px;height:44px;border-radius:50%;background:#fff3;display:grid;place-items:center;font-size:22px;overflow:hidden}#logo img{width:100%;height:100%;object-fit:cover}
+header h1{font-size:17px;margin:0}header small{opacity:.75;display:block;font-size:12px}
+main{max-width:1300px;margin:auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--br);border-radius:14px;padding:14px;margin-bottom:14px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,input,button{font:inherit;color:var(--tx)}select,input{background:var(--card);border:1px solid var(--br);border-radius:8px;padding:8px}
+input.y{background:var(--in)}input:disabled{opacity:.55;background:var(--br)}
+button{border:0;border-radius:8px;padding:9px 14px;cursor:pointer;background:var(--pr);color:#fff;font-weight:600}
+button.s{background:#fff2;color:#fff;padding:7px 11px}button.g{background:transparent;color:var(--bad);padding:4px 8px;border:1px solid var(--br)}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:1100px}
+th,td{border:1px solid var(--br);padding:5px 6px;text-align:center;white-space:nowrap}th{background:var(--hd);color:#fff;font-size:12px}
+td.n{text-align:start;font-weight:600}td input{width:80px;text-align:center}td input.t{width:130px;text-align:start}
+tfoot td{font-weight:700;background:var(--bg)}.ok{color:var(--ok);font-weight:700}.bad{color:var(--bad);font-weight:700}
+h2{font-size:16px;margin:0 0 4px}.note{color:var(--mu);font-size:12px;margin:8px 0 0}.rng{color:var(--mu);margin:0 0 10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tabs button{background:var(--card);color:var(--tx);border:1px solid var(--br)}.tabs button.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.tot{font-weight:700;margin:8px 0}
+#login{max-width:340px;margin:12vh auto;text-align:center}#login input{width:100%;margin:12px 0;text-align:center}
+#toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--hd);color:#fff;padding:10px 18px;border-radius:20px;opacity:0;transition:.3s;pointer-events:none;z-index:9}#toast.on{opacity:1}
+#rep{position:fixed;left:-9999px;top:0;width:1500px;background:#fff;color:#000;padding:24px;font-family:Tahoma,Arial,sans-serif}
+#rep table{min-width:0;font-size:13px}#rep td,#rep th{border:1px solid #bbb;color:#000}#rep th{background:#2b2d42;color:#fff}
+.card{box-shadow:0 2px 10px #0000000d}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 12px}.kp{background:var(--bg);border:1px solid var(--br);border-radius:12px;padding:10px 12px}.kp small{display:block;color:var(--mu);font-size:12px}.kp b{font-size:18px}
+#dlg{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:20}#dlg[hidden]{display:none}.dbox{background:var(--card);padding:22px;border-radius:14px;min-width:270px;text-align:center}
+#login{max-width:none;margin:0;min-height:calc(100vh - 72px);display:grid;place-items:center;background:linear-gradient(135deg,var(--pr),var(--hd));padding:20px}#login[hidden]{display:none}
+.lc{background:var(--card);border-radius:20px;padding:28px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 10px 40px #0004}.lg{font-size:46px}.lc h1{margin:6px 0 0}.lc p{color:var(--mu);margin:2px 0 14px}
+</style>
+</head>
+<body>
+<header>
+ <div id="logo">🌭</div><div><h1>Wazzup Dog</h1><small id="who"></small></div><span style="flex:1"></span>
+ <button class="s" id="bLang" onclick="togLang()"></button><button class="s" onclick="togDir()">⇄</button><button class="s" onclick="togTheme()">🌓</button><button class="s" id="bSet" onclick="setTab('set')" hidden>⚙</button><span id="svd" style="font-size:12px;opacity:.85"></span><button class="s" id="bOut" onclick="logout()" hidden></button>
+</header>
+
+<div id="login"><div class="lc"><div class="lg">🌭</div><h1>Wazzup Dog</h1><p data-i="sub"></p><h2 data-i="login"></h2><select id="lr" style="width:100%;margin:8px 0"></select><input id="pw" type="password" autocomplete="off" data-p="pass" onkeydown="if(event.key==='Enter')doLogin()"><button onclick="doLogin()" data-i="enter" style="width:100%"></button></div></div>
+<div id="dlg" hidden><div class="dbox"><p id="dm"></p><div class="bar" style="justify-content:center"><button id="dy" data-i="yes"></button><button id="dn" class="g" data-i="no"></button></div></div></div>
+
+<main id="app" hidden>
+<div class="card bar">
+ <select id="br"></select><select id="yr"></select><select id="mo"></select><select id="hf"></select><span style="flex:1"></span>
+ <button onclick="expXlsx()">⬇ Excel</button><button onclick="expPdf()">⬇ PDF</button>
+</div>
+<div class="tabs" id="tabs"></div>
+
+<section id="t-inv" class="card">
+ <h2 id="ttl"></h2><p class="rng" id="rng"></p><div class="kpis" id="kpis"></div>
+ <div class="sc"><table id="tbl"></table></div>
+ <div class="bar" style="margin-top:10px"><button id="bRoll" onclick="rollover()" data-i="roll" hidden></button></div>
+ <p class="note" data-i="note"></p>
+</section>
+<section id="t-pur" class="card" hidden>
+ <h2 data-i="purLog"></h2>
+ <div class="bar" id="pForm"><select id="p-i" onchange="fillLast()"></select><input id="p-new" data-p="newItem"><input id="p-d" type="date"><input id="p-n" data-p="invNo"><input id="p-s" list="sups" data-p="supplier"><datalist id="sups"></datalist><input id="p-q" type="number" step="any" data-p="qty" style="width:90px"><input id="p-p" type="number" step="any" data-p="unitPrice" style="width:130px"><input id="p-t" data-p="notes"><input id="p-by" data-p="byName" style="border-color:var(--pr)"><button onclick="addPur()">+</button></div>
+ <div class="tot" id="p-tot"></div><div class="sc"><table id="p-tbl"></table></div>
+</section>
+<section id="t-trf" class="card" hidden>
+ <h2 data-i="trfLog"></h2>
+ <div class="bar" id="rForm"><select id="r-i"></select><input id="r-d" type="date"><input id="r-n" data-p="trfNo"><select id="r-r"></select><input id="r-q" type="number" step="any" data-p="qty" style="width:90px"><input id="r-t" data-p="notes"><button onclick="addTrf()">+</button></div>
+ <div class="sc" style="margin-top:10px"><table id="r-tbl"></table></div>
+</section>
+<section id="t-itm" class="card" hidden>
+ <h2 data-i="items"></h2>
+ <div class="bar"><input id="i-a" data-p="nameAr"><input id="i-e" data-p="nameEn"><input id="i-u" data-p="unit" style="width:110px"><input id="i-pr" type="number" step="any" data-p="price" style="width:110px"><button onclick="addItem()">+</button></div>
+ <div class="sc" style="margin-top:10px"><table id="i-tbl"></table></div>
+</section>
+<section id="t-set" class="card" hidden>
+ <h2 data-i="settings"></h2>
+ <h3 data-i="color"></h3><div class="bar"><input type="color" id="clr" oninput="setColor(this.value)" style="width:48px;height:38px;padding:2px"><span id="presets" class="bar"></span></div>
+ <h3 data-i="pwTitle"></h3><div class="bar"><input id="pw-c" type="password" data-p="pwJ"><input id="pw-n" type="password" data-p="pwH"><input id="pw-n2" type="password" data-p="pwA"><button onclick="savePw()" data-i="pwSave"></button></div>
+ <h3 data-i="data"></h3><div class="bar"><span data-i="logoUp"></span><input type="file" accept="image/*" onchange="upLogo(this)"><button onclick="expJson()" data-i="backup"></button><span data-i="restore"></span><input type="file" accept=".json" onchange="impJson(this)"></div>
+ <p class="note" data-i="autosave"></p>
+ <h3 data-i="trash"></h3><div class="sc"><table id="trash" style="min-width:0"></table></div>
+ <h3 data-i="log"></h3><div class="sc" style="max-height:260px;overflow:auto"><table id="logt" style="min-width:0"></table></div>
+</section>
+</main>
+<div id="toast"></div><div id="rep"></div>
+
+<script>
+var LAST={},unsubs=[];
+var MO=[["يناير","Jan"],["فبراير","Feb"],["مارس","Mar"],["أبريل","Apr"],["مايو","May"],["يونيو","Jun"],["يوليو","Jul"],["أغسطس","Aug"],["سبتمبر","Sep"],["أكتوبر","Oct"],["نوفمبر","Nov"],["ديسمبر","Dec"]];
+var T={ar:{login:"تسجيل الدخول",pass:"كلمة المرور",enter:"دخول",wrong:"كلمة المرور غير صحيحة",out:"خروج",inv:"الجرد",pur:"المشتريات",trf:"التحويلات",items:"الأصناف",settings:"الإعدادات",
+ juffair:"الجفير",hamala:"الهملة",total:"الإجمالي (الفرعين)",h1:"1 – 15",h2:"16 – نهاية الشهر",roll:"ترحيل المتبقي الفعلي للفترة التالية",
+ note:"اكتب في الخانات الصفراء فقط. المفروض = الإجمالي − المبيعات − الهدر − أخرى. الفرق = الفعلي − المفروض (سالب = عجز). الموظف يدخل الجرد الفعلي مرة واحدة ثم يتقفل، والمدير فقط يعدّل.",
+ cols:["الصنف","المتبقي السابق","مشتريات","تحويل وارد","تحويل صادر","الإجمالي","المبيعات","الهدر","أخرى (−)","المفروض","الجرد الفعلي","الفرق","الحالة","السعر BHD","القيمة BHD","ملاحظات"],
+ ok:"✓ مطابق",short:"عجز",over:"زيادة",totRow:"الإجمالي",inventory:"جرد",purLog:"سجل المشتريات",trfLog:"التحويلات بين الفرعين",invNo:"رقم الفاتورة",supplier:"المورد",qty:"الكمية",unitPrice:"سعر الوحدة",notes:"ملاحظات",trfNo:"رقم التحويل",
+ pcols:["الصنف","التاريخ","رقم الفاتورة","المورد","الكمية","سعر الوحدة","الإجمالي BHD","ملاحظات","تاريخ ووقت التسجيل","المسجِّل"],tcols:["الصنف","التاريخ","الرقم","النوع","الكمية","ملاحظات"],
+ inn:"وارد (استلمنا)",out2:"صادر (بعنا)",nameAr:"الاسم بالعربي",nameEn:"English name",unit:"الوحدة",price:"السعر BHD",del:"حذف",sure:"متأكد؟",added:"تمت الإضافة ✓",needQty:"اكتب الكمية",
+ logoUp:"رفع اللوجو:",backup:"⬇ نسخة احتياطية",restore:"استرجاع:",wipe:"مسح كل البيانات",autosave:"الحفظ تلقائي بعد كل تعديل.",totPur:"إجمالي المشتريات",
+ rolled:"تم الترحيل ✓",rollQ:"ترحيل المتبقي الفعلي إلى الفترة التالية؟",locked:"مقفل",color:"لون التطبيق",pwTitle:"تغيير كلمة المرور (حسابك)",pwSave:"حفظ كلمات المرور",pwDone:"تم تغيير كلمات المرور ✓",pwShort:"كلمة المرور الجديدة 6 حروف على الأقل ومتطابقة",pwJ:"كلمة المرور الحالية",pwH:"كلمة المرور الجديدة",pwA:"تأكيد كلمة المرور الجديدة",data:"البيانات",trash:"المحذوفات (قابلة للاسترجاع)",log:"سجل النشاط",restoreBtn:"استرجاع",minQ:"الحد الأدنى (تنبيه ⚠)",yes:"نعم",no:"لا",byName:"اسم المسجِّل (إجباري)",needBy:"اكتب اسم الشخص اللي سجّل المشتريات",newItem:"أو اكتب صنف جديد",kStock:"قيمة المخزون",kItems:"عدد الأصناف",kLow:"تحت الحد الأدنى",kPur:"مشتريات الفترة",sub:"نظام الجرد",role_admin:"مدير",role_staff:"موظف",stockVal:"قيمة المخزون",unlock:"فتح"},
+en:{login:"Sign in",pass:"Password",enter:"Enter",wrong:"Wrong password",out:"Logout",inv:"Inventory",pur:"Purchases",trf:"Transfers",items:"Items",settings:"Settings",
+ juffair:"Juffair",hamala:"Hamala",total:"Total (both branches)",h1:"1 – 15",h2:"16 – End of month",roll:"Roll actual count to next period",
+ note:"Type only in yellow cells. Expected = Total − Sales − Waste − Other. Diff = Actual − Expected (negative = shortage). Staff enter the actual count once, then it locks; only the manager can edit.",
+ cols:["Item","Opening","Purchases","Transfer In","Transfer Out","Total","Sales","Waste","Other (−)","Expected","Actual Count","Diff","Status","Price BHD","Value BHD","Notes"],
+ ok:"✓ Match",short:"Shortage",over:"Surplus",totRow:"Total",inventory:"Inventory",purLog:"Purchases Log",trfLog:"Branch Transfers",invNo:"Invoice No.",supplier:"Supplier",qty:"Qty",unitPrice:"Unit price",notes:"Notes",trfNo:"Transfer No.",
+ pcols:["Item","Date","Invoice No.","Supplier","Qty","Unit Price","Total BHD","Notes","Recorded at","By"],tcols:["Item","Date","No.","Type","Qty","Notes"],
+ inn:"In (received)",out2:"Out (sent)",nameAr:"Arabic name",nameEn:"English name",unit:"Unit",price:"Price BHD",del:"Delete",sure:"Are you sure?",added:"Added ✓",needQty:"Enter quantity",
+ logoUp:"Upload logo:",backup:"⬇ Backup",restore:"Restore:",wipe:"Erase all data",autosave:"Auto-saved after every change.",totPur:"Total Purchases",
+ rolled:"Rolled over ✓",rollQ:"Roll the actual count to the next period?",locked:"Locked",color:"App color",pwTitle:"Change password (your account)",pwSave:"Save passwords",pwDone:"Passwords updated ✓",pwShort:"New password needs 6+ characters and must match",pwJ:"Current password",pwH:"New password",pwA:"Confirm new password",data:"Data",trash:"Deleted items (restorable)",log:"Activity log",restoreBtn:"Restore",minQ:"Min qty (⚠ alert)",yes:"Yes",no:"No",byName:"Recorded by (required)",needBy:"Enter the name of the person recording the purchase",newItem:"or type a new item",kStock:"Stock value",kItems:"Items",kLow:"Below minimum",kPur:"Period purchases",sub:"Inventory System",role_admin:"Manager",role_staff:"Staff",stockVal:"Stock value",unlock:"Unlock"}};
+function seed(){
+ var n=[["هوت دوج","Hot Dog"],["برجر","Burger"],["دجاج","Chicken"],["بطاطس","Fries"],["خبز","Bread"],["خبز بطاطس","Potato Buns"],["مشروبات غازية","Soft Drinks"],["مياه","Water"],["عصير","Juice"]];
+ var it=n.map(function(x,i){return{id:"i"+(i+1),ar:x[0],en:x[1],u:"",pr:0}});
+ var j={"2026-11-1":{open:{i1:2871,i2:90,i3:4,i4:43,i5:61,i6:9,i7:243,i8:156,i9:41},sales:{},waste:{},other:{},actual:{},notes:{},lock:{},
+  pur:[{i:"i6",d:"2026-11-02",n:"INV-124039",s:"Bid Foods",q:216,p:0.229167,t:""},{i:"i7",d:"2026-11-05",n:"INV-1279780",s:"Kinza",q:360,p:0.198695,t:""},{i:"i5",d:"2026-11-07",n:"-",s:"Bread",q:480,p:0.1,t:"1 - 7/11"},{i:"i8",d:"2026-11-05",n:"INV-1279780",s:"Kinza",q:36,p:0,t:""}],
+  trf:[{i:"i2",d:"",n:"",r:"in",q:20,t:""}]}};
+ return{items:it,br:{j:j,h:{}},seq:20,logo:"",ui:{lang:"ar",dir:"rtl"}};
+}
+var S={items:[],br:{j:{},h:{}},seq:20,logo:"",ui:{lang:"ar",dir:"rtl",theme:"",color:"#d62828"},log:[]},me=null,cur={b:"j",y:2026,m:10,h:1},tab="inv",ready=false;
+try{var u0=JSON.parse(localStorage.getItem("wd-ui"));if(u0){S.ui.lang=u0.lang||"ar";S.ui.dir=u0.dir||"rtl";S.ui.theme=u0.theme||""}}catch(e){}
+function canB(b){return me&&(me.role==="admin"||me.br===b)}
+function metaObj(){return{items:S.items,seq:S.seq,logo:S.logo,color:S.ui.color,lastBy:S.lastBy||"",log:S.log.slice(0,100)}}
+function setSvd(t){var e=document.getElementById("svd");if(e)e.textContent=t}
+function cw(c,id,o,lk){FB.set(c,id,o).then(function(){var d=new Date();setSvd("✓ "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))}).catch(function(){delete LAST[lk];setSvd("⚠ !");toast("⚠ Save failed")})}
+function save(){try{localStorage.setItem("wd-ui",JSON.stringify({lang:S.ui.lang,dir:S.ui.dir,theme:S.ui.theme}))}catch(e){}
+ if(!window.FB||!me||!ready)return;
+ var m=JSON.stringify(metaObj());if(LAST.meta!==m){LAST.meta=m;cw("meta","main",JSON.parse(m),"meta")}
+ ["j","h"].forEach(function(b){if(!canB(b))return;Object.keys(S.br[b]).forEach(function(k){var d=S.br[b][k],j=JSON.stringify(d),id=b+"_"+k;if(LAST[id]!==j){LAST[id]=j;cw("periods",id,JSON.parse(j),id)}})})}
+function fdt(s){if(!s)return"";var d=new Date(s);if(isNaN(d))return"";var p=function(n){return String(n).padStart(2,"0")};return d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes())}
+function IT(){return S.items.filter(function(i){return!i.del})}
+function logA(m){S.log.unshift({t:new Date().toISOString(),u:me?(me.role==="admin"?"admin":"staff-"+me.br):"",m:m});S.log=S.log.slice(0,300)}
+function $(i){return document.getElementById(i)}
+function L(k){return T[S.ui.lang][k]}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function num(v){var x=parseFloat(v);return isNaN(x)?0:x}
+function r3(x){return Math.round(x*1000)/1000}
+function toast(m){var t=$("toast");t.textContent=m;t.className="on";setTimeout(function(){t.className=""},2200)}
+function isAdmin(){return me&&me.role==="admin"}
+function nm(it){return S.ui.lang==="ar"?(it.ar||it.en):(it.en||it.ar)}
+function itName(id){var x=S.items.filter(function(i){return i.id===id})[0];return x?nm(x):"?"}
+function fd(s){if(!s)return"";var a=s.split("-");return a.length==3?(+a[2])+"/"+(+a[1])+"/"+a[0]:s}
+function key(c){return c.y+"-"+(c.m+1)+"-"+c.h}
+function nextOf(c){return c.h==1?{b:c.b,y:c.y,m:c.m,h:2}:(c.m==11?{b:c.b,y:c.y+1,m:0,h:1}:{b:c.b,y:c.y,m:c.m+1,h:1})}
+function rangeTxt(c){var last=c.h==1?15:new Date(c.y,c.m+1,0).getDate(),first=c.h==1?1:16,mm=c.m+1;return"\u2066"+first+"/"+mm+"/"+c.y+" - "+last+"/"+mm+"/"+c.y+"\u2069"}
+function P(b,k,mk){var o=S.br[b];if(!o[k]&&mk)o[k]={br:b,key:k,open:{},sales:{},waste:{},other:{},actual:{},notes:{},lock:{},pur:[],trf:[]};return o[k]}
+function calcB(b,id){
+ var p=P(b,key(cur))||{open:{},sales:{},waste:{},other:{},actual:{},notes:{},lock:{},pur:[],trf:[]};
+ var op=num(p.open[id]),pu=0,ti=0,to=0;
+ (p.pur||[]).forEach(function(x){if(x.i===id&&!x.del)pu+=num(x.q)});
+ (p.trf||[]).forEach(function(x){if(x.i===id&&!x.del){if(x.r==="in")ti+=num(x.q);else to+=num(x.q)}});
+ var sa=num(p.sales[id]),wa=num(p.waste[id]),ot=num(p.other[id]),tot=op+pu+ti-to,ex=tot-sa-wa-ot,a=p.actual[id],has=a!==undefined&&a!=="";
+ return{op:op,pu:pu,ti:ti,to:to,tot:tot,sa:sa,wa:wa,ot:ot,ex:ex,ac:has?num(a):"",lk:!!p.lock[id],nt:p.notes[id]||""};
+}
+function calc(id){
+ var r;if(cur.b==="t"){var a=calcB("j",id),b=calcB("h",id);r={};["op","pu","ti","to","tot","sa","wa","ot","ex"].forEach(function(k){r[k]=a[k]+b[k]});r.ac=(a.ac===""&&b.ac==="")?"":num(a.ac)+num(b.ac);r.nt="";r.lk=true}else r=calcB(cur.b,id);
+ if(cur.b==="t"){var A=calcB("j",id),B=calcB("h",id);r.df=r.ac===""?"":r3((A.ac===""?0:A.ac-A.ex)+(B.ac===""?0:B.ac-B.ex))}else r.df=r.ac===""?"":r3(r.ac-r.ex);
+ var q=r.ac!==""?r.ac:r.ex,it=S.items.filter(function(i){return i.id===id})[0];r.pr=num(it&&it.pr);r.val=r3(q*r.pr);return r}
+function stat(r){return r.df===""?"—":(r.df===0?L("ok"):(r.df<0?L("short"):L("over")))}
+
+function init(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+ var y=$("yr");for(var i=2026;i<=2036;i++)y.innerHTML+='<option>'+i+'</option>';
+ ["br","yr","mo","hf"].forEach(function(i){$(i).onchange=function(){cur.b=$("br").value;cur.y=+$("yr").value;cur.m=+$("mo").value;cur.h=+$("hf").value;render()}});
+ applyUI();
+}
+function applyUI(){
+ var l=S.ui.lang,d=document.documentElement;d.lang=l;d.dir=S.ui.dir;$("bLang").textContent=l==="ar"?"EN":"عربي";$("bOut").textContent=L("out");var lv=$("lr").value;$("lr").innerHTML='<option value="juffair">'+L("juffair")+'</option><option value="hamala">'+L("hamala")+'</option><option value="admin">'+L("role_admin")+'</option>';if(lv)$("lr").value=lv;$("bSet").hidden=!isAdmin();d.style.setProperty("--pr",S.ui.color||"#d62828");if(S.ui.theme)d.dataset.theme=S.ui.theme;
+ document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=L(e.dataset.i)});
+ document.querySelectorAll("[data-p]").forEach(function(e){e.placeholder=L(e.dataset.p)});
+ var m=$("mo");m.innerHTML="";MO.forEach(function(n,i){m.innerHTML+='<option value="'+i+'">'+(l==="ar"?n[0]:n[1])+'</option>'});
+ $("hf").innerHTML='<option value="1">'+L("h1")+'</option><option value="2">'+L("h2")+'</option>';
+ $("r-r").innerHTML='<option value="in">'+L("inn")+'</option><option value="out">'+L("out2")+'</option>';
+ var b=$("br");b.innerHTML="";if(me){if(isAdmin()){b.innerHTML='<option value="j">'+L("juffair")+'</option><option value="h">'+L("hamala")+'</option><option value="t">'+L("total")+'</option>'}else{b.innerHTML='<option value="'+me.br+'">'+L(me.br==="j"?"juffair":"hamala")+'</option>'}}
+ $("br").value=cur.b;$("yr").value=cur.y;$("mo").value=cur.m;$("hf").value=cur.h;
+ var tb=[["inv","inv"],["pur","pur"],["trf","trf"],["itm","items"]];if(isAdmin())tb.push(["set","settings"]);
+ $("tabs").innerHTML=tb.map(function(x){return'<button data-t="'+x[0]+'" class="'+(tab===x[0]?"on":"")+'" onclick="setTab(\''+x[0]+'\')">'+L(x[1])+'</button>'}).join("");
+ if(S.logo){$("logo").innerHTML='<img src="'+S.logo+'" alt="">';document.querySelector(".lg").innerHTML='<img src="'+S.logo+'" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover">'}
+ if(me)$("who").textContent=L("role_"+me.role)+(me.role==="staff"?" – "+L(me.br==="j"?"juffair":"hamala"):"");
+ if(me)render();
+}
+function setTab(t){tab=t;["inv","pur","trf","itm","set"].forEach(function(x){$("t-"+x).hidden=(x!==t)});applyUI()}
+function togLang(){S.ui.lang=S.ui.lang==="ar"?"en":"ar";S.ui.dir=S.ui.lang==="ar"?"rtl":"ltr";save();applyUI()}
+function togDir(){S.ui.dir=S.ui.dir==="rtl"?"ltr":"rtl";save();applyUI()}
+function doLogin(){if(!window.FB){toast("...");return}var p=$("pw").value;if(!p)return;
+ FB.login($("lr").value+"@wazzup.app",p).then(function(){$("pw").value=""}).catch(function(){toast(L("wrong"))})}
+function logout(){if(window.FB)FB.logout()}
+window.onAuth=function(u){
+ unsubs.forEach(function(f){f()});unsubs=[];ready=false;LAST={};
+ if(!u){me=null;$("login").hidden=false;$("app").hidden=true;$("bOut").hidden=true;$("who").textContent="";$("bSet").hidden=true;return}
+ var n=(u.email||"").split("@")[0];me={role:n==="admin"?"admin":"staff",br:n==="hamala"?"h":"j"};cur.b=me.br;
+ $("login").hidden=true;$("app").hidden=false;$("bOut").hidden=false;S.br={j:{},h:{}};
+ unsubs.push(FB.subMeta(function(d){
+  if(d){S.items=d.items||[];S.seq=d.seq||20;S.logo=d.logo||"";S.ui.color=d.color||S.ui.color;S.lastBy=d.lastBy||"";S.log=d.log||[];LAST.meta=JSON.stringify(metaObj())}
+  else if(isAdmin()){var sd=seed();S.items=sd.items;S.seq=sd.seq;S.br.j=sd.br.j;Object.keys(S.br.j).forEach(function(k){S.br.j[k].br="j";S.br.j[k].key=k})}
+  else toast("Setup not finished yet – sign in as manager first");
+  var first=!ready;ready=true;if(first)setTab("inv");else render();if(!d&&isAdmin())save()}));
+ unsubs.push(FB.subPeriods(isAdmin()?null:me.br,function(docs){docs.forEach(function(x){var d=x.data;if(!d.br||!S.br[d.br])return;S.br[d.br][d.key]=d;LAST[x.id]=JSON.stringify(d)});if(ready)render()}))}
+
+function render(){
+ save();var ro=cur.b==="t",ad=isAdmin(),nmB=L(cur.b==="j"?"juffair":(cur.b==="h"?"hamala":"total"));
+ $("ttl").textContent=iso(L("inventory"))+" – "+iso(nmB)+" – "+iso(MO[cur.m][S.ui.lang==="ar"?0:1]+" "+cur.y);$("rng").textContent=rangeTxt(cur);
+ var c=L("cols"),h='<tr>'+c.map(function(x){return'<th>'+x+'</th>'}).join("")+'</tr>',tv=0;
+ IT().forEach(function(it){var r=calc(it.id),cl=r.df===""?"":(r.df===0?"ok":"bad"),dis=ro?" disabled":"",lkA=(ro||(!ad&&r.lk))?" disabled":"";tv+=r.val;
+  h+='<tr><td class="n">'+esc(nm(it))+(it.mn&&(r.ac!==""?r.ac:r.ex)<it.mn?' <span class="bad">⚠</span>':'')+(it.u?' <small>('+esc(it.u)+')</small>':'')+'</td>'
+  +'<td>'+(ro||!ad?r3(r.op):inp("open",it.id,r.op))+'</td><td>'+r3(r.pu)+'</td><td>'+r3(r.ti)+'</td><td>'+r3(r.to)+'</td><td>'+r3(r.tot)+'</td>'
+  +'<td>'+(ro?r3(r.sa):inp("sales",it.id,r.sa||"",dis))+'</td><td>'+(ro?r3(r.wa):inp("waste",it.id,r.wa||"",dis))+'</td><td>'+(ro?r3(r.ot):inp("other",it.id,r.ot||"",dis))+'</td>'
+  +'<td>'+r3(r.ex)+'</td><td>'+(ro?(r.ac===""?"":r3(r.ac)):inp("actual",it.id,r.ac,lkA)+(r.lk&&ad&&!ro?' <button class="g" onclick="unlock(\''+it.id+'\')">'+L("unlock")+'</button>':''))+'</td>'
+  +'<td class="'+cl+'">'+r.df+'</td><td class="'+cl+'">'+stat(r)+'</td><td>'+r.pr+'</td><td>'+r.val.toFixed(3)+'</td>'
+  +'<td>'+(ro?"":'<input class="y t" value="'+esc(r.nt)+'" '+(ad||!r.lk?"":"")+' onchange="setF(\'notes\',\''+it.id+'\',this.value,1)">')+'</td></tr>'});
+ h+='<tfoot><tr><td class="n" colspan="14">'+L("totRow")+' – '+L("stockVal")+'</td><td>'+r3(tv).toFixed(3)+'</td><td></td></tr></tfoot>';
+ $("tbl").innerHTML=h;$("bRoll").hidden=!(ad&&!ro);
+ var opts=IT().map(function(i){return'<option value="'+i.id+'">'+esc(nm(i))+'</option>'}).join("");
+ ["p-i","r-i"].forEach(function(i){var v=$(i).value;$(i).innerHTML=opts;if(v)$(i).value=v});
+ var bb=ro?"j":cur.b,p=P(bb,key(cur))||{pur:[],trf:[]},tt=0;
+ $("pForm").hidden=$("rForm").hidden=ro;
+ var pc=L("pcols"),ph='<tr>'+pc.map(function(x){return'<th>'+x+'</th>'}).join("")+'<th></th></tr>';
+ (p.pur||[]).forEach(function(x,i){if(x.del)return;var t=num(x.q)*num(x.p);tt+=t;ph+='<tr><td class="n">'+esc(itName(x.i))+'</td><td>'+ec("pur",i,"d",x.d,"date",130)+'</td><td>'+ec("pur",i,"n",x.n)+'</td><td>'+ec("pur",i,"s",x.s)+'</td><td>'+ec("pur",i,"q",x.q,"number",70)+'</td><td>'+ec("pur",i,"p",x.p,"number",80)+'</td><td>'+t.toFixed(3)+'</td><td>'+ec("pur",i,"t",x.t)+'</td><td>'+fdt(x.ts)+'</td><td>'+esc(x.by)+'</td><td>'+(ad&&!ro?'<button class="g" onclick="del(\'pur\','+i+')">'+L("del")+'</button>':'')+'</td></tr>'});
+ $("p-tbl").innerHTML=ph;$("p-tot").textContent=L("totPur")+": "+tt.toFixed(3)+" BHD  ("+rangeTxt(cur)+")";
+ var tc=L("tcols"),rh='<tr>'+tc.map(function(x){return'<th>'+x+'</th>'}).join("")+'<th></th></tr>';
+ (p.trf||[]).forEach(function(x,i){if(x.del)return;rh+='<tr><td class="n">'+esc(itName(x.i))+'</td><td>'+ec("trf",i,"d",x.d,"date",130)+'</td><td>'+ec("trf",i,"n",x.n)+'</td><td>'+(x.r==="in"?L("inn"):L("out2"))+'</td><td>'+ec("trf",i,"q",x.q,"number",70)+'</td><td>'+ec("trf",i,"t",x.t)+'</td><td>'+(ad&&!ro?'<button class="g" onclick="del(\'trf\','+i+')">'+L("del")+'</button>':'')+'</td></tr>'});
+ $("r-tbl").innerHTML=rh;
+ var ih='<tr><th>'+L("nameAr")+'</th><th>'+L("nameEn")+'</th><th>'+L("unit")+'</th><th>'+L("price")+'</th><th>'+L("minQ")+'</th><th></th></tr>';
+ S.items.forEach(function(it,i){if(it.del)return;ih+='<tr><td><input class="t" value="'+esc(it.ar)+'" onchange="editItem('+i+',\'ar\',this.value)"></td><td><input class="t" value="'+esc(it.en)+'" onchange="editItem('+i+',\'en\',this.value)"></td><td><input class="t" value="'+esc(it.u)+'" onchange="editItem('+i+',\'u\',this.value)"></td><td><input class="y" type="number" step="any" value="'+it.pr+'" '+(ad?"":"disabled")+' onchange="editItem('+i+',\'pr\',this.value)"></td><td><input class="y" type="number" step="any" value="'+(it.mn||"")+'" onchange="editItem('+i+',\'mn\',this.value)"></td><td>'+(ad?'<button class="g" onclick="delItem('+i+')">'+L("del")+'</button>':'')+'</td></tr>'});
+ $("i-tbl").innerHTML=ih;if(ad)renderSet();
+ var low=0;IT().forEach(function(it){var r=calc(it.id);if(it.mn&&(r.ac!==""?r.ac:r.ex)<it.mn)low++});
+ var pt=0;(ro?["j","h"]:[cur.b]).forEach(function(b){var q=P(b,key(cur));q&&(q.pur||[]).forEach(function(x){if(!x.del)pt+=num(x.q)*num(x.p)})});
+ $("kpis").innerHTML=kp(L("kStock"),r3(tv).toFixed(3)+" BHD")+kp(L("kItems"),IT().length)+kp(L("kLow"),low)+kp(L("kPur"),pt.toFixed(3)+" BHD");
+ var sp={};["j","h"].forEach(function(b){Object.keys(S.br[b]).forEach(function(k){(S.br[b][k].pur||[]).forEach(function(x){if(x.s)sp[x.s]=1})})});$("sups").innerHTML=Object.keys(sp).map(function(s){return'<option value="'+esc(s)+'">'}).join("");
+ if(!$("p-by").value)$("p-by").value=S.lastBy||"";if(!$("p-d").value)$("p-d").value=new Date().toISOString().slice(0,10);
+}
+function inp(k,id,v,dis){return'<input class="y" type="number" step="any" value="'+(v===undefined?"":v)+'"'+(dis||"")+' onchange="setF(\''+k+'\',\''+id+'\',this.value)">'}
+function setF(k,id,v,txt){if(cur.b==="t")return;var p=P(cur.b,key(cur),1);p[k][id]=txt?v:(v===""?"":num(v));if(k==="actual"&&v!==""&&!isAdmin())p.lock[id]=true;logA(k+": "+itName(id)+" = "+v+" ("+key(cur)+")");render()}
+function unlock(id){P(cur.b,key(cur),1).lock[id]=false;render()}
+function rollover(){ask(L("rollQ"),doRoll)}
+function ask(m,cb){$("dm").textContent=m;$("dlg").hidden=false;$("dy").onclick=function(){$("dlg").hidden=true;cb()};$("dn").onclick=function(){$("dlg").hidden=true}}
+function kp(a,b){return'<div class="kp"><small>'+a+'</small><b>'+b+'</b></div>'}
+function ec(l,i,k,v,ty,w){if(!(isAdmin()&&cur.b!=="t"))return ty==="date"?fd(v):esc(v);return'<input class="y" style="width:'+(w||90)+'px" type="'+(ty||"text")+'" value="'+esc(v)+'" onchange="editRow(\''+l+'\','+i+',\''+k+'\',this.value)">'}
+function editRow(l,i,k,v){if(!isAdmin()||cur.b==="t")return;var x=P(cur.b,key(cur),1)[l][i];x[k]=(k==="q"||k==="p")?num(v):v;logA("edit "+l+" "+k);render()}
+function fillLast(){var id=$("p-i").value,best=null;["j","h"].forEach(function(b){Object.keys(S.br[b]).forEach(function(k){(S.br[b][k].pur||[]).forEach(function(x){if(x.i===id&&!x.del&&(!best||(x.ts||x.d||"")>(best.ts||best.d||"")))best=x})})});if(best){$("p-p").value=best.p;$("p-s").value=best.s||""}}
+function doRoll(){var n=nextOf(cur),d=P(cur.b,key(n),1);
+ S.items.forEach(function(it){var r=calcB(cur.b,it.id);d.open[it.id]=r.ac!==""?r.ac:r3(r.ex)});logA("rollover "+key(cur));toast(L("rolled"));render()}
+function addPur(){var q=$("p-q").value,by=$("p-by").value.trim();
+ if(cur.b==="t")return;if(!by){toast(L("needBy"));$("p-by").focus();return}if(!q){toast(L("needQty"));return}
+ var id=$("p-i").value,nw=$("p-new").value.trim();
+ if(nw){S.seq=(S.seq||20)+1;id="i"+S.seq;S.items.push({id:id,ar:nw,en:nw,u:"",pr:0});$("p-new").value=""}
+ S.lastBy=by;var p=P(cur.b,key(cur),1);logA("+purchase");
+ p.pur.push({ts:new Date().toISOString(),by:by,i:id,d:$("p-d").value,n:$("p-n").value,s:$("p-s").value.trim(),q:num(q),p:num($("p-p").value),t:$("p-t").value});
+ ["p-q","p-p","p-n","p-s","p-t"].forEach(function(i){$(i).value=""});render();$("p-i").value=id;toast(L("added"))}function addTrf(){var q=$("r-q").value;if(!q){toast(L("needQty"));return}var p=P(cur.b,key(cur),1);
+ logA("+transfer");p.trf.push({ts:new Date().toISOString(),i:$("r-i").value,d:$("r-d").value,n:$("r-n").value,r:$("r-r").value,q:num(q),t:$("r-t").value});["r-q","r-n","r-t"].forEach(function(i){$(i).value=""});render();toast(L("added"))}
+function del(k,i){if(!isAdmin()||cur.b==="t")return;ask(L("sure"),function(){P(cur.b,key(cur),1)[k][i].del=new Date().toISOString();logA("delete "+k);render()})}
+function addItem(){var a=$("i-a").value.trim(),e=$("i-e").value.trim();if(!a&&!e)return;S.seq=(S.seq||20)+1;
+ S.items.push({id:"i"+S.seq,ar:a,en:e,u:$("i-u").value.trim(),pr:isAdmin()?num($("i-pr").value):0});["i-a","i-e","i-u","i-pr"].forEach(function(i){$(i).value=""});render();toast(L("added"))}
+function editItem(i,k,v){S.items[i][k]=(k==="pr"||k==="mn")?num(v):v;logA("item "+k);render()}
+function delItem(i){if(!isAdmin())return;ask(L("sure"),function(){S.items[i].del=new Date().toISOString();logA("delete item");render()})}
+function restoreItem(i){delete S.items[i].del;logA("restore item");render()}
+function restoreDel(b,k,t,i){delete S.br[b][k][t][i].del;logA("restore "+t);render()}
+function togTheme(){var d=document.documentElement,c=d.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");S.ui.theme=c==="dark"?"light":"dark";d.dataset.theme=S.ui.theme;save()}
+function setColor(v){S.ui.color=v;document.documentElement.style.setProperty("--pr",v);if($("clr"))$("clr").value=v;save()}
+function savePw(){var n=$("pw-n").value;if(n.length<6||n!==$("pw-n2").value){toast(L("pwShort"));return}
+ if(!window.FB)return;FB.chpw($("pw-c").value,n).then(function(){toast(L("pwDone"));["pw-c","pw-n","pw-n2"].forEach(function(i){$(i).value=""})}).catch(function(){toast(L("wrong"))})}
+function renderSet(){
+ $("clr").value=S.ui.color;
+ $("presets").innerHTML=["#d62828","#e85d04","#2a9d8f","#1d4ed8","#7b2cbf","#2b2d42"].map(function(c){return'<button style="background:'+c+';width:30px;height:30px;padding:0;border:2px solid #fff8" onclick="setColor(\''+c+'\')"></button>'}).join("");
+ var h="";S.items.forEach(function(it,i){if(it.del)h+='<tr><td>'+esc(nm(it))+'</td><td>'+fdt(it.del)+'</td><td><button class="g" onclick="restoreItem('+i+')">'+L("restoreBtn")+'</button></td></tr>'});
+ ["j","h"].forEach(function(b){Object.keys(S.br[b]).forEach(function(k){["pur","trf"].forEach(function(t){(S.br[b][k][t]||[]).forEach(function(x,i){if(x.del)h+='<tr><td>'+L(b==="j"?"juffair":"hamala")+' '+k+' – '+L(t==="pur"?"pur":"trf")+'</td><td>'+esc(itName(x.i))+' × '+x.q+'</td><td>'+fdt(x.del)+'</td><td><button class="g" onclick="restoreDel(\''+b+'\',\''+k+'\',\''+t+'\','+i+')">'+L("restoreBtn")+'</button></td></tr>'})})})});
+ $("trash").innerHTML=h||'<tr><td>—</td></tr>';
+ $("logt").innerHTML=S.log.slice(0,60).map(function(e){return'<tr><td>'+fdt(e.t)+'</td><td>'+esc(e.u)+'</td><td>'+esc(e.m)+'</td></tr>'}).join("");
+}
+function upLogo(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(){S.logo=r.result;save();applyUI()};r.readAsDataURL(f)}
+
+async function saveFile(name,data,mime){
+ try{if(typeof claude!=="undefined"){var d=await claude.use("downloads");if(d){await d.save({filename:name,data:data});return}}}catch(e){if(e&&e.code==="declined")return}
+ var b=new Blob([data],{type:mime}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+function fname(x){return"Wazzup_"+(cur.b==="j"?"Juffair":cur.b==="h"?"Hamala":"Total")+"_"+cur.y+"-"+String(cur.m+1).padStart(2,"0")+"_"+(cur.h==1?"1-15":"16-End")+"."+x}
+function rowsAoa(){var a=[L("cols")],tv=0;
+ IT().forEach(function(it){var r=calc(it.id);tv+=r.val;a.push([nm(it),r3(r.op),r3(r.pu),r3(r.ti),r3(r.to),r3(r.tot),r3(r.sa),r3(r.wa),r3(r.ot),r3(r.ex),r.ac,r.df,stat(r),r.pr,r.val,r.nt])});
+ var f=new Array(16).fill("");f[0]=L("totRow");f[14]=r3(tv);a.push(f);return a}
+function iso(x){return"\u2068"+x+"\u2069"}
+function ttlTxt(){return iso("Wazzup Dog")+" – "+iso(L(cur.b==="j"?"juffair":cur.b==="h"?"hamala":"total"))+" | "+iso(MO[cur.m][S.ui.lang==="ar"?0:1]+" "+cur.y)+" | "+rangeTxt(cur)}
+function pData(){var p=P(cur.b==="t"?"j":cur.b,key(cur))||{pur:[],trf:[]};return p}
+async function expXlsx(){
+ if(typeof XLSX==="undefined"){toast("...");return}
+ var p=pData(),wb=XLSX.utils.book_new(),a=rowsAoa();a.unshift([ttlTxt()]);
+ var s1=XLSX.utils.aoa_to_sheet(a);s1["!cols"]=a[1].map(function(x,i){return{wch:i?13:26}});
+ var pa=[L("pcols")],tt=0;(p.pur||[]).forEach(function(x){if(x.del)return;var t=r3(num(x.q)*num(x.p));tt+=t;pa.push([itName(x.i),fd(x.d),x.n,x.s,x.q,x.p,t,x.t,fdt(x.ts),x.by||""])});pa.push(["","","","","","",r3(tt),""]);
+ var ta=[L("tcols")];(p.trf||[]).forEach(function(x){if(x.del)return;ta.push([itName(x.i),fd(x.d),x.n,x.r==="in"?L("inn"):L("out2"),x.q,x.t])});
+ XLSX.utils.book_append_sheet(wb,s1,L("inv"));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pa),L("pur"));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ta),L("trf"));
+ wb.Workbook={Views:[{RTL:S.ui.dir==="rtl"}]};
+ await saveFile(fname("xlsx"),new Blob([XLSX.write(wb,{bookType:"xlsx",type:"array"})],{type:"application/octet-stream"}),"application/octet-stream");
+}
+async function expPdf(){
+ if(typeof html2canvas==="undefined"||!window.jspdf){toast("...");return}
+ toast("PDF...");var a=rowsAoa(),p=pData(),tt=0;
+ var h='<div dir="'+S.ui.dir+'"><h2 style="margin:0 0 10px">'+esc(ttlTxt())+'</h2><table>';
+ a.forEach(function(r,i){h+='<tr>'+r.map(function(c){return(i?'<td>':'<th>')+esc(c)+(i?'</td>':'</th>')}).join("")+'</tr>'});h+='</table>';
+ if((p.pur||[]).length&&cur.b!=="t"){h+='<h3>'+L("purLog")+'</h3><table><tr>'+L("pcols").map(function(x){return'<th>'+x+'</th>'}).join("")+'</tr>';
+  p.pur.forEach(function(x){if(x.del)return;var t=num(x.q)*num(x.p);tt+=t;h+='<tr><td>'+esc(itName(x.i))+'</td><td>'+fd(x.d)+'</td><td>'+esc(x.n)+'</td><td>'+esc(x.s)+'</td><td>'+x.q+'</td><td>'+x.p+'</td><td>'+t.toFixed(3)+'</td><td>'+esc(x.t)+'</td><td>'+fdt(x.ts)+'</td><td>'+esc(x.by)+'</td></tr>'});h+='</table><b>'+L("totPur")+': '+tt.toFixed(3)+' BHD</b>'}
+ $("rep").innerHTML=h+'</div>';
+ try{var cv=await html2canvas($("rep"),{scale:2,backgroundColor:"#fff"}),pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
+  var W=pdf.internal.pageSize.getWidth()-30,H=pdf.internal.pageSize.getHeight()-30,ph=Math.floor(cv.width*H/W),y=0,f=true;
+  while(y<cv.height){var c=document.createElement("canvas");c.width=cv.width;c.height=Math.min(ph,cv.height-y);c.getContext("2d").drawImage(cv,0,y,cv.width,c.height,0,0,cv.width,c.height);
+   if(!f)pdf.addPage();f=false;pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",15,15,W,c.height*W/cv.width);y+=ph}
+  await saveFile(fname("pdf"),pdf.output("blob"),"application/pdf")}catch(e){toast("PDF error")}
+ $("rep").innerHTML="";
+}
+function expJson(){saveFile("Wazzup_Inventory_Backup.json",JSON.stringify(S),"application/json")}
+function impJson(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d.items||!d.br)throw 0;S.items=d.items;S.br=d.br;S.seq=d.seq||S.seq;LAST={};save();applyUI()}catch(e){toast("Invalid file")}};r.readAsText(f)}
+init();
+</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,onSnapshot,collection,query,where}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyA_TGEgHZcwZwCvioWapF7dZNtlUxTjh4c",authDomain:"wazzupdog-inventory-items.firebaseapp.com",projectId:"wazzupdog-inventory-items",storageBucket:"wazzupdog-inventory-items.firebasestorage.app",messagingSenderId:"613831855349",appId:"1:613831855349:web:625458043bc5ec8796c9bc"});
+const auth=getAuth(app);
+const db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+window.FB={
+ login:(e,p)=>signInWithEmailAndPassword(auth,e,p),
+ logout:()=>signOut(auth),
+ set:(c,i,d)=>setDoc(doc(db,c,i),d),
+ subMeta:cb=>onSnapshot(doc(db,"meta","main"),s=>cb(s.exists()?s.data():null)),
+ subPeriods:(b,cb)=>onSnapshot(b?query(collection(db,"periods"),where("br","==",b)):collection(db,"periods"),s=>cb(s.docs.filter(d=>!d.metadata.hasPendingWrites).map(d=>({id:d.id,data:d.data()})))),
+ chpw:async(cur,nw)=>{const u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,cur));await updatePassword(u,nw)}
+};
+onAuthStateChanged(auth,u=>window.onAuth&&window.onAuth(u));
+</script>
+</body>
+</html>
